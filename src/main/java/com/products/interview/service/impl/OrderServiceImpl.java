@@ -6,14 +6,19 @@ import com.products.interview.repository.ProductRepository;
 import com.products.interview.repository.entity.Order;
 import com.products.interview.service.OrderService;
 import com.products.interview.service.mapper.OrderMapper;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     private OrderRepository orderRepository;
@@ -27,10 +32,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public DtoOrder createOrder(final DtoOrder dtoOrder) {
 
         final Order order = orderMapper.mapToEntity(dtoOrder);
         order.setIdOrder(UUID.randomUUID());
+        order.getProducts()
+                .forEach(e -> {
+                    e.setUuid(UUID.randomUUID());
+                    e.setOrder(order);
+                });
 
         return Optional.ofNullable(orderRepository.save(order))
                 .map(orderMapper::mapToDto)
@@ -39,30 +50,23 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public DtoOrder getOrderById(String idOrder) {
-        Order order = orderRepository.getOrderById(idOrder);
-        return orderMapper.mapToDto(order);
-
+    public DtoOrder getOrderById(UUID idOrder) {
+        return orderRepository.getOrderById(idOrder)
+                .map(orderMapper::mapToDto)
+                .orElse(null);
     }
 
     @Override
-    public List<DtoOrder> getOrders() {
+    public List<DtoOrder> getOrders(final String rfc) {
+        if (StringUtils.hasLength(rfc)) {
+            return orderRepository.getOrderByRFC(rfc).stream()
+                    .map(orderMapper::mapToDto)
+                    .collect(Collectors.toList());
+        }
 
-        final List<Order> orders = orderRepository.getAllOrders();
-        final List<DtoOrder> response = new ArrayList<>();
-
-        orders.forEach(order -> {
-            DtoOrder dto = orderMapper.mapToDto(order);
-            response.add(dto);
-
-        });
-        return response;
-
+        return orderRepository.getAllOrders().stream()
+                .map(orderMapper::mapToDto)
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public DtoOrder getOrderByParams(String rfc) {
-        Order order = orderRepository.getOrderByRFC(rfc);
-        return orderMapper.mapToDto(order);
-    }
 }

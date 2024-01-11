@@ -11,8 +11,6 @@ import java.util.UUID;
 @Data
 public class DtoProduct implements Serializable {
 
-    @Id
-    private UUID idProduct;
     @NotEmpty
     private String productCode;
     @NotEmpty

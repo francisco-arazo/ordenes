@@ -1,15 +1,14 @@
 package com.products.interview.repository.entity;
 
 import com.products.interview.controller.dto.DtoProduct;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
-@Entity(name = "order")
+@Entity(name = "orders")
 public class Order {
 
     @Id
@@ -21,7 +20,7 @@ public class Order {
     private String nameStore;
     @Column(name = "rfc_client")
     private String rfcClient;
-    @Column(name = "product")
-    private DtoProduct product;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Product> products;
 
 }

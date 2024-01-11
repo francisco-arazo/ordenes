@@ -1,14 +1,12 @@
 package com.products.interview.repository.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.UUID;
 
 @Data
-@Entity(name = "product")
+@Entity(name = "order_detail")
 public class Product {
 
     @Id
@@ -20,5 +18,8 @@ public class Product {
     private String productName;
     @Column(name = "amount")
     private Double amount;
+    @ManyToOne
+    @JoinColumn(name = "product_order", nullable = false)
+    private Order order;
 
 }
